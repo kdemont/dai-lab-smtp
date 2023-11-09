@@ -1,42 +1,84 @@
-package ch.heig.dai.lab.protocoldesign;
+package ch.heig.dai.lab.smtp;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.*;
-import java.net.*;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+
 import static java.nio.charset.StandardCharsets.*;
 
 public class Client {
-    final String SERVER_ADDRESS = "127.0.0.1";
-    final int SERVER_PORT = 1234;
+    private static final String SMTP_SERVER = "localhost";
+    private static final int SMTP_PORT = 1025;
 
     public static void main(String[] args) {
-        // Create a new client and run it
-        Client client = new Client();
-        client.run();
+        // Read victim and message lists from JSON files
+        List<String> victims = readFromJsonFile("victims.json", "emails");
+        List<String> messages = readFromJsonFile("messages.json", "messages");
+
+        // Other client logic...
+        for (String victim : victims) {
+            // Form groups, select messages, and send emails
+            // (You'll need to implement the logic for this)
+            // ...
+
+            // Example: Send email content
+            sendEmail("Your Subject", "Hello, this is the body of the email.", victim);
+        }
     }
 
-    private void run() {
-        try (Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT)) {
-            // Create input and output streams
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), UTF_8));
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), UTF_8));
+    private static void sendEmail(String subject, String body, String recipient) {
+        try (Socket socket = new Socket(SMTP_SERVER, SMTP_PORT);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), UTF_8));
+             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), UTF_8))) {
 
-            // Read and print the welcome message and supported operations
-            String welcomeMessage = in.readLine();
-            String supportedOperations = in.readLine();
-            System.out.println(welcomeMessage);
-            System.out.println(supportedOperations);
+            // SMTP communication logic...
 
-            // Read and send user commands
-            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            String userInput;
-            while ((userInput = reader.readLine()) != null) {
-                out.write(userInput + "\n");
-                out.flush();
-                String result = in.readLine();
-                System.out.println("Result is: " + result);
-            }
+            sendCommand(writer, "MAIL FROM: sender@example.com");
+            sendCommand(writer, "RCPT TO: " + recipient);
+            sendCommand(writer, "DATA");
+            sendCommand(writer, "Subject: " + subject);
+            sendCommand(writer, ""); // Empty line before the body
+            sendCommand(writer, body);
+            sendCommand(writer, ".");
+
+            // SMTP communication logic...
+
         } catch (IOException e) {
             System.out.println("Client: exception while using client socket: " + e);
         }
+    }
+
+    private static List<String> readFromJsonFile(String filePath, String arrayKey) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(filePath));
+
+            StringBuilder jsonString = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                jsonString.append(line);
+            }
+            reader.close();
+
+            JSONObject jsonObject = new JSONObject(jsonString.toString());
+            JSONArray jsonArray = jsonObject.getJSONArray(arrayKey);
+
+            List<String> list = new ArrayList<>();
+            for (int i = 0; i < jsonArray.length(); i++) {
+                list.add(jsonArray.getString(i));
+            }
+            return list;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return List.of(); // Return an empty list in case of an error
+        }
+    }
+
+    private static void sendCommand(BufferedWriter writer, String command) throws IOException {
+        writer.write(command + "\n");
+        writer.flush();
     }
 }
