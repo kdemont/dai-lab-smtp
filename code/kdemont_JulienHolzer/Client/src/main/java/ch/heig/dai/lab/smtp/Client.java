@@ -40,9 +40,7 @@ public class Client {
             String[] subjectAndMessage = getRandomSubjectAndMessage(messages);
 
             // Send emails to the group
-            for (String receiver : receivers) {
-                sendEmail(sender, receiver, subjectAndMessage[0], subjectAndMessage[1]);
-            }
+            sendEmail(sender, receivers, subjectAndMessage[0], subjectAndMessage[1]);
         }
     }
 
@@ -71,14 +69,13 @@ public class Client {
         }
     }
 
-private static void sendEmail(String sender, String receiver, String subject, String body) {
+private static void sendEmail(String sender, List<String> receivers, String subject, String body) {
     try (Socket socket = new Socket(SMTP_SERVER, SMTP_PORT);
          BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), UTF_8));
          BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), UTF_8))) {
 
         // SMTP communication logic...
 
-        //TODO : corriger système de groupe
         reader.readLine();
         sendCommand(writer, "ehlo localhost");
 
@@ -90,18 +87,26 @@ private static void sendEmail(String sender, String receiver, String subject, St
         }
 
         sendCommand(writer, "MAIL FROM: " + sender);
-
         String test1 = reader.readLine();
-        sendCommand(writer, "RCPT TO: " + receiver);
-        test1 = reader.readLine();
-        System.out.println(test1);
 
+        for (var receiver : receivers) {
+            sendCommand(writer, "RCPT TO: " + receiver);
+            test1 = reader.readLine();
+            System.out.println(test1);
+        }
         sendCommand(writer, "DATA");
         test1 = reader.readLine();
         System.out.println(test1);
 
         sendCommand(writer, "From: " + sender);
-        sendCommand(writer, "To: " + receiver);
+        StringBuilder allReceivers = new StringBuilder();
+        for (var receiver : receivers) {
+            allReceivers.append(receiver);
+            if (!Objects.equals(receiver, receivers.getLast()))
+                allReceivers.append(", ");
+        }
+        System.out.println(allReceivers);
+        sendCommand(writer, "To: " + allReceivers);
         sendCommand(writer, "Subject: " + subject);
         sendCommand(writer, ""); // Empty line before the body
         sendCommand(writer, body);
