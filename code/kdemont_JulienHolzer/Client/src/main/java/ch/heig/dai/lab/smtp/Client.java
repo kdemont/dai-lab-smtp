@@ -18,9 +18,9 @@ public class Client {
         int n = 10; //Integer.parseInt(args[0]); //décommenter à la fin
 
         // Read victim and message lists from JSON files
-        List<String> victims = readFromJsonFile("code/kdemont_JulienHolzer/Client/src/main/resources/victims.json", "victims");
-        List<String> messages = readFromJsonFile("code/kdemont_JulienHolzer/Client/src/main/resources/messages.json", "messages");
-        //changer la logique des messages en deux array ou autre structure
+        List<String> victims = readFromJsonFile(Client.class.getResource("/victims.json").getFile(), "victims");
+        List<String> messages = readFromJsonFile(Client.class.getResource("/messages.json").getFile(), "messages");
+        //TODO : changer la logique des messages en deux array ou autre structure
 
 
         // Shuffle the list of victims
@@ -46,28 +46,6 @@ public class Client {
         }
     }
 
-    private static void sendEmail(String sender, String receiver, String subject, String body) {
-        try (Socket socket = new Socket(SMTP_SERVER, SMTP_PORT);
-             BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), UTF_8));
-             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), UTF_8))) {
-
-            // SMTP communication logic...
-
-            sendCommand(writer, "MAIL FROM: " + sender);
-            sendCommand(writer, "RCPT TO: " + receiver);
-            sendCommand(writer, "DATA");
-            sendCommand(writer, "Subject: " + subject);
-            sendCommand(writer, ""); // Empty line before the body
-            sendCommand(writer, body);
-            sendCommand(writer, ".");
-
-            // SMTP communication logic...
-
-        } catch (IOException e) {
-            System.out.println("Client: exception while using client socket: " + e);
-        }
-    }
-
     private static List<String> readFromJsonFile(String filePath, String arrayKey) {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(filePath));
@@ -88,11 +66,53 @@ public class Client {
             }
             return list;
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Client: exception while reading json: " + e);
             return List.of(); // Return an empty list in case of an error
         }
     }
 
+private static void sendEmail(String sender, String receiver, String subject, String body) {
+    try (Socket socket = new Socket(SMTP_SERVER, SMTP_PORT);
+         BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), UTF_8));
+         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), UTF_8))) {
+
+        // SMTP communication logic...
+
+        //TODO : corriger système de groupe
+        reader.readLine();
+        sendCommand(writer, "ehlo localhost");
+
+        int index = 0;
+        while (index != -1) {
+            String answer = reader.readLine();
+            index = answer.indexOf("-");
+            System.out.println(answer);
+        }
+
+        sendCommand(writer, "MAIL FROM: " + sender);
+
+        String test1 = reader.readLine();
+        sendCommand(writer, "RCPT TO: " + receiver);
+        test1 = reader.readLine();
+        System.out.println(test1);
+
+        sendCommand(writer, "DATA");
+        test1 = reader.readLine();
+        System.out.println(test1);
+
+        sendCommand(writer, "From: " + sender);
+        sendCommand(writer, "To: " + receiver);
+        sendCommand(writer, "Subject: " + subject);
+        sendCommand(writer, ""); // Empty line before the body
+        sendCommand(writer, body);
+        sendCommand(writer, "\r\n.\r");
+        test1 = reader.readLine();
+        System.out.println(test1); // SMTP communication logic...
+
+    } catch (IOException e) {
+        System.out.println("Client: exception while using client socket: " + e);
+    }
+}
     private static void sendCommand(BufferedWriter writer, String command) throws IOException {
         writer.write(command + "\n");
         writer.flush();

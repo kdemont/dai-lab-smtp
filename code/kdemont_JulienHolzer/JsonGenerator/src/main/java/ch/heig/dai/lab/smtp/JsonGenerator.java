@@ -18,7 +18,7 @@ public class JsonGenerator {
 
         // Generate more than 50 victim emails
         for (int i = 1; i <= 50; i++) {
-            victimsArray.put("victim" + i + "@example.com");
+            victimsArray.put("<victim" + i + "@example.com>");
         }
 
         // Create a JSON object for the victims data
