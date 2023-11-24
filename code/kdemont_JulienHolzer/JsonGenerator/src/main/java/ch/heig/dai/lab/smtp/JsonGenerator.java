@@ -2,9 +2,9 @@
 -----------------------------------------------------------------------------------
 File name         : JsonGenerator.java
 
-Author(s)         : [Your Name(s)]
+Author(s)         : Kilian Demont and Julien Holzer
 
-Creation date     : [Creation Date]
+Creation date     : 09.11.2023
 
 Description       : This file contains the JsonGenerator class, which is responsible
                     for generating and saving JSON data for victims and messages.
