@@ -1,21 +1,10 @@
-/*
------------------------------------------------------------------------------------
-File name         : Message.java
-
-Author(s)         : Kilian Demont and Julien Holzer
-
-Creation date     : 23.11.2023
-
-Description       : This file contains the Message class representing an email message
-                    with a subject and body.
-
------------------------------------------------------------------------------------
-*/
-
 package ch.heig.dai.lab.smtp;
 
 /**
  * Represents an email message with a subject and body.
+ *
+ * @author Julien Holzer
+ * @author Kilian Demont
  */
 class Message {
     private final String subject;

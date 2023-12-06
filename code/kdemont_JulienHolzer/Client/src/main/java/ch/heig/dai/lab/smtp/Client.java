@@ -1,24 +1,3 @@
-/*
------------------------------------------------------------------------------------
-File name         : Client.java
-
-Author(s)         : Kilian Demont and Julien Holzer
-
-Creation date     : 09.11.2023
-
-Description       : SMTP client application for sending emails to groups of victims
-                    using messages read from JSON files.
-
-                    The program reads victim and message lists from JSON files, shuffles
-                    the list of victims, divides them into n groups, and sends emails to
-                    each group using a random message from the messages list.
-
-                    Messages and victims are read from "messages.json" and "victims.json"
-                    files respectively.
-
------------------------------------------------------------------------------------
-*/
-
 package ch.heig.dai.lab.smtp;
 
 import org.json.JSONArray;
@@ -31,6 +10,16 @@ import java.util.*;
 
 /**
  * The main client class for sending emails to groups of victims.
+ * SMTP client application for sending emails to groups of victims
+ * using messages read from JSON files.
+ * The program reads victim and message lists from JSON files, shuffles
+ * the list of victims, divides them into n groups, and sends emails to
+ * each group using a random message from the messages list.
+ * Messages and victims are read from "messages.json" and "victims.json"
+ * files respectively.
+ *
+ * @author Julien Holzer
+ * @author Kilian Demont
  */
 public class Client {
     private static final String SMTP_SERVER = "localhost";
@@ -39,15 +28,40 @@ public class Client {
     /**
      * Main method to initiate the email sending process.
      *
-     * @param args Command-line arguments.
+     * @param args Command-line arguments for the number of groups.
      */
     public static void main(String[] args) {
+        // Check if a command line argument is provided
+        if (args.length == 0) {
+            System.err.println("Error: Please provide the number of groups as a command line argument.");
+            return;
+        }
+
         // Read the number of groups provided as a command line argument
-        int n = 10; //Integer.parseInt(args[0]); // Uncomment at the end
+        int n;
+        try {
+            n = Integer.parseInt(args[0]);
+        } catch (NumberFormatException e) {
+            System.err.println("Error: Invalid number format for the number of groups.");
+            return;
+        }
+
+        // Check if the number of groups is invalid
+        if (n <= 0) {
+            System.err.println("Error: The number of groups must be greater than zero.");
+            return;
+        }
 
         // Read victim and message lists from JSON files
         List<String> victims = readFromJsonFile("/victims.json", "victims");
         List<Message> messages = readMessagesFromJsonFile("/messages.json", "messages");
+
+        // Check if the e-mail adresses are valid
+        for (var victim : victims){
+            if (!checkValidAddress(victim)){
+                return;
+            }
+        }
 
         // Shuffle the list of victims
         Collections.shuffle(victims);
@@ -68,6 +82,8 @@ public class Client {
             // Send emails to the group
             sendEmail(sender, receivers, randomMessage.getSubject(), randomMessage.getBody());
         }
+
+        System.out.println("All messages have been sent successfully.");
     }
 
     /**
@@ -98,7 +114,7 @@ public class Client {
             }
             return list;
         } catch (IOException e) {
-            System.out.println("Client: exception while reading json: " + e);
+            System.err.println("Client: exception while reading json: " + e);
             return List.of(); // Return an empty list in case of an error
         }
     }
@@ -134,7 +150,7 @@ public class Client {
             }
             return messages;
         } catch (IOException e) {
-            System.out.println("Client: exception while reading json: " + e);
+            System.err.println("Client: exception while reading json: " + e);
             return List.of(); // Return an empty list in case of an error
         }
     }
@@ -160,22 +176,17 @@ public class Client {
             while (index != -1) {
                 String answer = reader.readLine();
                 index = answer.indexOf("-");
-                System.out.println(answer);
             }
 
             sendCommand(writer, "MAIL FROM: <" + sender + ">");
-            String test1 = reader.readLine();
 
             for (var receiver : receivers) {
                 sendCommand(writer, "RCPT TO: <" + receiver + ">");
-                test1 = reader.readLine();
-                System.out.println(test1);
             }
 
             sendCommand(writer, "DATA");
-            test1 = reader.readLine();
-            System.out.println(test1);
 
+            sendCommand(writer, "Content-Type: text/plain; charset=UTF-8");
             sendCommand(writer, "From: <" + sender + ">");
             StringBuilder allReceivers = new StringBuilder();
             for (var receiver : receivers) {
@@ -183,17 +194,14 @@ public class Client {
                 if (!Objects.equals(receiver, receivers.get(receivers.size() - 1)))
                     allReceivers.append(", ");
             }
-            System.out.println(allReceivers);
             sendCommand(writer, "To: " + allReceivers);
-            sendCommand(writer, "Subject: " + subject);
+            sendCommand(writer, "Subject: =?UTF-8?B?" + Base64.getEncoder().encodeToString(subject.getBytes("utf-8")) + "?=");
             sendCommand(writer, ""); // Empty line before the body
             sendCommand(writer, body);
             sendCommand(writer, "\r\n.\r");
-            test1 = reader.readLine();
-            System.out.println(test1);
 
         } catch (IOException e) {
-            System.out.println("Client: exception while using client socket: " + e);
+            System.err.println("Client: exception while using client socket: " + e);
         }
     }
 
@@ -248,6 +256,52 @@ public class Client {
         Random random = new Random();
         int index = random.nextInt(messages.size());
         return messages.get(index);
+    }
+
+
+    /**
+     * Checks the validity of an email address based on the following criteria:
+     * - The email address length should not exceed 254 characters.
+     * - The email address must contain the '@' symbol.
+     * - The email prefix follows an acceptable format: alphanumeric characters, periods, underscores, and dashes.
+     * - The email domain follows an acceptable format: alphanumeric characters, dashes, and a valid top-level domain (TLD).
+     *
+     * @param address The email address to be validated.
+     * @return {@code true} if the email address is valid, {@code false} otherwise.
+     */
+    private static boolean checkValidAddress(String address) {
+        // Check that the email address does not exceed the authorised size
+        if (address.length() > 254) {
+            System.err.println("Error: The email address \"" + address + "\" is too long.");
+            return false;
+        }
+
+        // Check if '@' symbol is present
+        if (address.indexOf('@') == -1) {
+            System.err.println("Error: Email address \"" + address + "\" does not contain the '@' symbol.");
+            return false;
+        }
+
+        // Split the email address into prefix and domain
+        String[] parts = address.split("@");
+        String prefix = parts[0];
+        String domain = parts[1];
+
+        // Check email prefix format
+        String prefixRegex = "[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*";
+        if (!prefix.matches(prefixRegex)) {
+            System.err.println("Error: Invalid email prefix format in \"" + address + "\".");
+            return false;
+        }
+
+        // Check email domain format
+        String domainRegex = "[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\\.[a-zA-Z]{2,}";
+        if (!domain.matches(domainRegex)) {
+            System.err.println("Error: Invalid email domain format in \"" + address + "\".");
+            return false;
+        }
+
+        return true;
     }
 }
 

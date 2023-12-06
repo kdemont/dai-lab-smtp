@@ -1,17 +1,3 @@
-/*
------------------------------------------------------------------------------------
-File name         : JsonGenerator.java
-
-Author(s)         : Kilian Demont and Julien Holzer
-
-Creation date     : 09.11.2023
-
-Description       : This file contains the JsonGenerator class, which is responsible
-                    for generating and saving JSON data for victims and messages.
-
------------------------------------------------------------------------------------
-*/
-
 package ch.heig.dai.lab.smtp;
 
 import org.json.JSONArray;
@@ -22,6 +8,9 @@ import java.io.IOException;
 
 /**
  * The JsonGenerator class generates and saves JSON data for victims and messages.
+ *
+ *  @author Julien Holzer
+ *  @author Kilian Demont
  */
 public class JsonGenerator {
 
@@ -68,8 +57,8 @@ public class JsonGenerator {
         // Generate more than 50 messages
         for (int i = 1; i <= 50; i++) {
             JSONObject messageObject = new JSONObject();
-            messageObject.put("subject", "Subject " + i);
-            messageObject.put("body", "Message " + i);
+            messageObject.put("subject", "✨Subject " + i + "✨");
+            messageObject.put("body", "✨Message " + i + "✨");
 
             messagesArray.put(messageObject);
         }
