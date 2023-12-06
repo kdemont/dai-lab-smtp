@@ -23,7 +23,9 @@ Instruction pour configurer une campagne de canular d’e-mail
 ----------
 Pour pouvoir lancer une campagne de canular, nous avons mis à disposition un générateur de JSON qui permet de créer une liste de victimes ainsi qu’une liste de messages incluant un sujet.
 
-Ensuite, il suffit de lancer le programme dans le fichier Client qui lui permet de lire ces fichiers JSON (attention à adapter l’emplacement de ces fichiers), puis qui va former des groupes aléatoirement parmi la liste de victimes formés d’un envoyeur et de receveur(s). Le programme va ensuite envoyer des e-mails contenant des messages parmi la liste de messages (composé d’un contenu « body » et d’un sujet « subject »).
+Ensuite, il suffit de lancer le programme dans le fichier Client qui lui permet de lire ces fichiers JSON (attention à adapter l’emplacement de ces fichiers), puis qui va former des groupes aléatoirement parmi la liste de victimes formés d’un envoyeur et de receveur(s). Le programme va ensuite envoyer des e-mails contenant des messages parmi la liste de messages (composé d’un contenu « body » et d’un sujet « subject »). Exemple de résultat sur MailDev :
+
+![MailDev_result](/figures/maildev.PNG)
 
 Description de l’implémentation
 ----------
@@ -41,4 +43,8 @@ La **classe Client** qui contient entre autres le main où l’on effectue l’e
 
 * divideIntoGroups() pour former des groupes
 
-* sendEmail() pour pouvoir envoyer des e-mails à un groupe de receveurs, cette fonction va établir une connexion SMTP avec un serveur et envoyer des commandes SMTP pour spécifier l’expéditeur, les destinataires, et le contenu d’un e-mail.
+* sendEmail() pour pouvoir envoyer des e-mails à un groupe de receveurs, cette fonction va établir une connexion SMTP avec un serveur et envoyer des commandes SMTP pour spécifier l’expéditeur, les destinataires, et le contenu d’un e-mail. Voici un schéma da la communication entre le client et le serveur :
+
+<div align="center">
+  ![SMTP_schema](/figures/smtp_resquests.png)
+</div>
