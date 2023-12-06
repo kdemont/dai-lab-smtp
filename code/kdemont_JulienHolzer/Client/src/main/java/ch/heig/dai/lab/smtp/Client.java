@@ -195,7 +195,7 @@ public class Client {
                     allReceivers.append(", ");
             }
             sendCommand(writer, "To: " + allReceivers);
-            sendCommand(writer, "Subject: =?UTF-8?B?" + Base64.getEncoder().encodeToString(subject.getBytes("utf-8")) + "?=");
+            sendCommand(writer, "Subject: =?UTF-8?B?" + Base64.getEncoder().encodeToString(subject.getBytes(StandardCharsets.UTF_8)) + "?=");
             sendCommand(writer, ""); // Empty line before the body
             sendCommand(writer, body);
             sendCommand(writer, "\r\n.\r");
