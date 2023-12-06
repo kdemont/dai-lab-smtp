@@ -172,12 +172,6 @@ public class Client {
             reader.readLine();
             sendCommand(writer, "ehlo localhost");
 
-            int index = 0;
-            while (index != -1) {
-                String answer = reader.readLine();
-                index = answer.indexOf("-");
-            }
-
             sendCommand(writer, "MAIL FROM: <" + sender + ">");
 
             for (var receiver : receivers) {
