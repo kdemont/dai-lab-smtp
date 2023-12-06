@@ -45,6 +45,4 @@ La **classe Client** qui contient entre autres le main où l’on effectue l’e
 
 * sendEmail() pour pouvoir envoyer des e-mails à un groupe de receveurs, cette fonction va établir une connexion SMTP avec un serveur et envoyer des commandes SMTP pour spécifier l’expéditeur, les destinataires, et le contenu d’un e-mail. Voici un schéma da la communication entre le client et le serveur :
 
-<div align="center">
-  ![SMTP_schema](/figures/smtp_resquests.png)
-</div>
+![SMTP_schema](/figures/smtp_resquests.png)
